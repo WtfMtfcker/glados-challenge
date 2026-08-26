@@ -387,3 +387,201 @@
     transition-duration: .01ms !important;
   }
 }
+/* =========================================
+   ESTATS DE L'AVATAR
+   ========================================= */
+
+#glados-avatar-container {
+    --avatar-color: var(--accent-color, #00d9ff);
+    --avatar-shadow: rgba(0, 217, 255, .45);
+
+    transition:
+        filter .3s ease,
+        box-shadow .3s ease;
+}
+
+#glados-avatar-container.state-idle {
+    --avatar-color: #e6c861;
+    --avatar-shadow: rgba(230, 200, 97, .4);
+}
+
+#glados-avatar-container.state-idle
+#glados-face-image {
+    border-color: #e6c861;
+    box-shadow:
+        0 0 12px rgba(230, 200, 97, .5),
+        0 0 25px rgba(230, 200, 97, .25);
+    filter: saturate(.75);
+}
+
+#glados-avatar-container.state-talking {
+    --avatar-color: #00d9ff;
+    --avatar-shadow: rgba(0, 217, 255, .5);
+}
+
+#glados-avatar-container.state-talking
+#glados-face-image {
+    border-color: #00d9ff;
+    box-shadow:
+        0 0 15px rgba(0, 217, 255, .8),
+        0 0 30px rgba(0, 217, 255, .35);
+    animation: avatar-talking-pulse 1.5s ease-in-out infinite;
+}
+
+#glados-avatar-container.state-error {
+    --avatar-color: #ff604d;
+    --avatar-shadow: rgba(255, 96, 77, .55);
+}
+
+#glados-avatar-container.state-error
+#glados-face-image {
+    border-color: #ff604d;
+    box-shadow:
+        0 0 18px rgba(255, 96, 77, .9),
+        0 0 35px rgba(255, 96, 77, .4);
+    filter: saturate(1.5) hue-rotate(-15deg);
+}
+
+#glados-avatar-container.state-success {
+    --avatar-color: #62ef8b;
+    --avatar-shadow: rgba(98, 239, 139, .6);
+}
+
+#glados-avatar-container.state-success
+#glados-face-image {
+    border-color: #62ef8b;
+    box-shadow:
+        0 0 20px rgba(98, 239, 139, .95),
+        0 0 40px rgba(98, 239, 139, .45);
+    filter: saturate(1.4);
+}
+
+/* =========================================
+   ANIMACIONS
+   ========================================= */
+
+@keyframes avatar-talking-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.04);
+    }
+}
+
+@keyframes avatar-error-shake {
+    0%, 100% {
+        transform: translateX(0) rotate(0);
+    }
+
+    20% {
+        transform: translateX(-7px) rotate(-2deg);
+    }
+
+    40% {
+        transform: translateX(7px) rotate(2deg);
+    }
+
+    60% {
+        transform: translateX(-5px) rotate(-1deg);
+    }
+
+    80% {
+        transform: translateX(5px) rotate(1deg);
+    }
+}
+
+@keyframes avatar-success-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.09);
+    }
+
+    70% {
+        transform: scale(.98);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+#glados-avatar-container.error-shake {
+    animation: avatar-error-shake .45s ease-in-out 1;
+}
+
+#glados-avatar-container.success-pulse {
+    animation: avatar-success-pulse .7s ease-in-out 1;
+}
+/* =========================================
+   BRAÇ ROBÒTIC
+   ========================================= */
+
+#glados-avatar-container .g-arm {
+    transform-origin: 20% 10%;
+    transition: transform .35s ease;
+}
+
+#glados-avatar-container.state-idle .g-arm {
+    animation: arm-idle 3.5s ease-in-out infinite;
+}
+
+#glados-avatar-container.state-talking .g-arm {
+    animation: arm-talking 1.8s ease-in-out infinite;
+}
+
+#glados-avatar-container.state-error .g-arm {
+    animation: arm-error .65s ease-in-out infinite alternate;
+}
+
+#glados-avatar-container.state-success .g-arm {
+    animation: arm-success .8s ease-in-out 2;
+}
+
+@keyframes arm-idle {
+    0%, 100% {
+        transform: rotate(3deg) translateY(0);
+    }
+
+    50% {
+        transform: rotate(-8deg) translateY(5px);
+    }
+}
+
+@keyframes arm-talking {
+    0%, 100% {
+        transform: rotate(-12deg) translateY(0);
+    }
+
+    50% {
+        transform: rotate(12deg) translateY(-5px);
+    }
+}
+
+@keyframes arm-error {
+    0% {
+        transform: rotate(-18deg) translateX(0);
+    }
+
+    100% {
+        transform: rotate(-30deg) translateX(-4px);
+    }
+}
+
+@keyframes arm-success {
+    0% {
+        transform: rotate(-18deg) translateY(8px);
+    }
+
+    55% {
+        transform: rotate(20deg) translateY(-8px);
+    }
+
+    100% {
+        transform: rotate(-5deg) translateY(0);
+    }
+}
