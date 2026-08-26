@@ -1260,8 +1260,7 @@
 
             // Llançar instrucció
             if (phaseNum === 1) {
-                printToTerminal("
-[ENTORN TERMINAL FASE 1 INICIADA - CONTROL DE MAQUINARI]", 'system');
+                printToTerminal("\n[ENTORN TERMINAL FASE 1 INICIADA - CONTROL DE MAQUINARI]", 'system');
                 triggerTypewriter("He amagat la clau de pas a la memòria cau ràpida de la CPU d'arquitectura lliure. Eviteu utilitzar el mateix bus per a dades i programes o col·lapsareu el processament del vostre ordinador compartit.", () => {
                     setGladosState('idle');
                     focusCLI();
@@ -1269,8 +1268,7 @@
             } else if (phaseNum === 2) {
                 gameState.currentPath = "/";
                 updatePromptPath();
-                printToTerminal("
-[ENTORN TERMINAL FASE 2 INICIADA - INTEGRITAT DE FITXERS]", 'system');
+                printToTerminal("\n[ENTORN TERMINAL FASE 2 INICIADA - INTEGRITAT DE FITXERS]", 'system');
                 triggerTypewriter("He detectat tres fitxers de restauració comprimits. Un és un xafardeig de l'examen de classe. Els altres són còpies locals o al núvol. Demostreu que sabeu fer un desament legítim o m'en mofaré.", () => {
                     setGladosState('idle');
                     focusCLI();
@@ -1278,8 +1276,7 @@
             } else if (phaseNum === 3) {
                 gameState.currentPath = "/";
                 updatePromptPath();
-                printToTerminal("
-[ENTORN TERMINAL FASE 3 INICIADA - SERVIDOR DE NOMS DNS]", 'system');
+                printToTerminal("\n[ENTORN TERMINAL FASE 3 INICIADA - SERVIDOR DE NOMS DNS]", 'system');
                 triggerTypewriter("El domini textual 'servidor_glados.com' ens està inundant. Rastegeu el canal de logs del servidor encarregat d'associar els noms amb els bytes de la IP de xarxa per saber l'origen.", () => {
                     setGladosState('idle');
                     focusCLI();
@@ -1287,8 +1284,7 @@
             } else if (phaseNum === 4) {
                 gameState.currentPath = "/";
                 updatePromptPath();
-                printToTerminal("
-[ENTORN TERMINAL FASE 4 INICIADA - AUDITORIA DE MALWARE]", 'system');
+                printToTerminal("\n[ENTORN TERMINAL FASE 4 INICIADA - AUDITORIA DE MALWARE]", 'system');
                 triggerTypewriter("L'últim repte. Comproveu les signatures de seguretat dels binaris executable, netegeu el troià infiltrat, analitzeu les carreteres actives amb 'netstat' i tanqueu la sessió d'equip per segellar la backdoor.", () => {
                     setGladosState('idle');
                     focusCLI();
@@ -1686,8 +1682,7 @@ ${flag}
                 printToTerminal("Consultant el servidor de traducció de noms de xarxa DNS...");
                 printToTerminal(`Nom: ${arg}`);
                 printToTerminal(`Address: ${targetIp}`);
-                printToTerminal("
-[SISTEMA]: Nom resolt. El canal de logs del servidor DNS ha quedat obert.");
+                printToTerminal("\n[SISTEMA]: Nom resolt. El canal de logs del servidor DNS ha quedat obert.");
             } else {
                 setGladosState('error');
                 printToTerminal("nslookup: host desconegut o no resolt pel servidor de l'institut.", 'error');
@@ -1805,8 +1800,7 @@ ${flag}
                 return;
             }
 
-            printToTerminal("Llistat de comunicacions actives i rutes obertes d'Internet:
-");
+            printToTerminal("Llistat de comunicacions actives i rutes obertes d'Internet:\n");
             printToTerminal("Proto  Adreça local          Adreça externa            Estat");
             printToTerminal("TCP    192.168.1.15:443      192.168.1.99:53           ESTABLISHED  (DNS Server)");
             
@@ -1816,8 +1810,7 @@ ${flag}
                 printToTerminal("GLaDOS: El malware manté un dret d'espionatge obert amb el atacant en viu. Tallar-lo és la millor opció.");
             } else {
                 printToTerminal(`TCP    192.168.1.15:1025     ${targetIp}:6666         TIME_WAIT    (Connection closing...)`);
-                printToTerminal("
-[SISTEMA]: No s'han detectat connexions sospitoses actives. El servidor està net.");
+                printToTerminal("\n[SISTEMA]: No s'han detectat connexions sospitoses actives. El servidor està net.");
                 
                 const hexCode = (gameState.seed % 5999 + 4000).toString(16).toUpperCase();
                 const flag = `FLAG{NETSTAT_OUT_${hexCode}}`;
@@ -1895,8 +1888,7 @@ ${flag}
                 if (gameState.loggedOut) {
                     triggerVictoryScreen();
                 } else {
-                    printToTerminal("
-GLaDOS: Heu aconseguit la clau final. Però realment us aixequeu de la cadira de l'institut deixant la sessió completament oberta? Tancar el compte és elemental. Teclegeu 'logout'.", 'error');
+                    printToTerminal("\nGLaDOS: Heu aconseguit la clau final. Però realment us aixequeu de la cadira de l'institut deixant la sessió completament oberta? Tancar el compte és elemental. Teclegeu 'logout'.", 'error');
                 }
             }
         }
