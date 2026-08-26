@@ -278,12 +278,7 @@
             position: relative;
         }
 
-        .glados-svg {
-            width: 100%;
-            height: 100%;
-            max-width: 420px;
-            max-height: 450px;
-        }
+        <link rel="stylesheet" href="css/avatar.css">
 
         /* ANIMACIONS MECÀNIQUES DEL BRAÇ DE PORTAL 2 */
         .g-arm {
@@ -765,55 +760,62 @@
         <div class="three-columns-layout">
             
             <!-- COLUMNA 1: AVATAR GLaDOS PORTAL 2 (35%) -->
-            <div id="avatar-column">
-                <div id="glados-avatar-container">
-                    <svg class="glados-svg" viewBox="0 0 320 280">
-                        <!-- Sostre i base de suspensió -->
-                        <rect x="110" y="0" width="100" height="15" fill="#1c1d22" />
-                        <line x1="160" y1="15" x2="160" y2="40" stroke="#2c2d35" stroke-width="6" />
-                        
-                        <!-- Cables industrials oscil·lants amb física real -->
-                        <path class="cable-swaying-1" d="M 140,15 Q 120,50 150,85" stroke="#111" stroke-width="2.5" fill="none" />
-                        <path class="cable-swaying-2" d="M 180,15 Q 200,45 170,90" stroke="#111" stroke-width="2.5" fill="none" />
+            <aside id="gladtec"
+       class="avatar-widget estat-explicant"
+       aria-label="Supervisora virtual del laboratori">
 
-                        <!-- Braç mecànic segmentat (G-Arm) -->
-                        <g class="g-arm">
-                            <!-- Plaques articulades d'acer -->
-                            <polygon points="150,40 170,40 185,85 135,85" fill="#25262c" stroke="#111" stroke-width="2" />
-                            <circle cx="160" cy="40" r="8" fill="#ffb700" />
-                            
-                            <!-- Pistons Hidràulics actius (SVG complex) -->
-                            <line x1="140" y1="50" x2="148" y2="85" stroke="#7f8c8d" stroke-width="4" />
-                            <line x1="180" y1="50" x2="172" y2="85" stroke="#7f8c8d" stroke-width="4" />
+  <button id="avatar-toggle"
+          class="avatar-toggle"
+          type="button"
+          aria-label="Amaga o mostra l'avatar">
+    ×
+  </button>
 
-                            <polygon points="142,85 178,85 168,135 152,135" fill="#1c1d22" stroke="#111" stroke-width="2" />
-                            <circle cx="160" cy="85" r="7" fill="#ffb700" />
-                            
-                            <!-- Cap robòtic Portal 2 d'Aperture Science (G-Head) -->
-                            <g class="g-head">
-                                <!-- Anells de telemetria digital giratoris -->
-                                <circle class="ring-outer" cx="160" cy="140" r="46" fill="none" stroke="#ffb700" stroke-width="2.5" stroke-dasharray="14 10" opacity="0.8" />
-                                <circle class="ring-inner" cx="160" cy="140" r="37" fill="none" stroke="#00ff66" stroke-width="1.5" stroke-dasharray="6 6" opacity="0.6" />
-                                
-                                <!-- Suport metàl·lic arquejat de subjecció (Cradle) -->
-                                <path d="M 118,140 A 42,42 0 0,1 202,140" fill="none" stroke="#2c2d35" stroke-width="6" stroke-linecap="round" />
-                                
-                                <!-- Imatge dinàmica d'ull GLaDOS -->
-                                <foreignObject x="127" y="107" width="66" height="66">
-                                    <img id="glados-face-image" src="https://upload.wikimedia.org/wikipedia/en/9/90/GLaDOS.png" 
-                                         style="width:66px; height:66px; border-radius:50%; border:3px solid #ffb700; box-shadow: 0 0 10px #ffb700; transition: all 0.4s ease;" alt="GLaDOS Lens">
-                                </foreignObject>
-                            </g>
-                        </g>
-                    </svg>
-                </div>
-                
-                <div class="glados-info-overlay">
-                    <div class="holo-telemetry-line">SYSTEM: HIJACKED BY GLaDOS</div>
-                    <div class="holo-telemetry-line">SUBJECTS: 4T ESO HUMAN LAB</div>
-                    <div class="holo-telemetry-line" style="color:var(--text-color)">CORE: ACTIVE & CLINICAL</div>
-                </div>
-            </div>
+  <div class="avatar-stage">
+    <div class="avatar-cable cable-esquerra"></div>
+    <div class="avatar-cable cable-dreta"></div>
+
+    <div class="avatar-body">
+      <div class="avatar-panel"></div>
+
+      <div class="avatar-eye" aria-hidden="true">
+        <div class="pupil"></div>
+        <div class="eye-reflection"></div>
+      </div>
+
+      <div class="status-light light-one"></div>
+      <div class="status-light light-two"></div>
+    </div>
+
+    <div class="robot-arm" aria-hidden="true">
+      <div class="arm-base"></div>
+
+      <div class="arm-upper">
+        <div class="arm-elbow"></div>
+
+        <div class="arm-lower">
+          <div class="robot-hand">
+            <span class="finger finger-one"></span>
+            <span class="finger finger-two"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="avatar-info">
+    <span id="avatar-state-label">EXPLICANT</span>
+    <p id="avatar-message">
+      Preparant la propera missió...
+    </p>
+  </div>
+</aside>
+
+<button id="show-avatar"
+        class="show-avatar hidden"
+        type="button">
+  Mostrar supervisora
+</button>
 
             <!-- COLUMNA 2: TERMINAL DE TREBALL (45%) -->
             <div id="terminal-column">
@@ -1194,78 +1196,77 @@
             }
         }
 
-        // 3. CONTROL DE L'AVATAR (3 ESTATS REALS)
+        // 3. CONTROL DE L'AVATAR
         function setGladosState(state) {
             const img = document.getElementById("glados-face-image");
             const container = document.getElementById("glados-avatar-container");
-            const arm = container.querySelector(".g-arm");
-            
-            img.style.transform = "scale(1)";
-            img.style.filter = "none";
-            img.style.borderColor = "var(--accent-color)";
-            img.style.boxShadow = "0 0 10px var(--accent-color)";
-            container.classList.remove("error-shake");
 
-            if (state === 'idle') {
-                img.style.borderColor = "#00ff66";
-                img.style.boxShadow = "0 0 15px #00ff66";
-            } 
-            else if (state === 'talking') {
-                img.style.borderColor = "var(--accent-color)";
-                img.style.boxShadow = "0 0 15px var(--accent-color)";
-                img.style.transform = "scale(1.05)";
-            } 
-            else if (state === 'error') {
-                playSound('glitch');
-                img.style.borderColor = "var(--error-color)";
-                img.style.boxShadow = "0 0 20px var(--error-color)";
-                img.style.transform = "scale(0.9)";
-                img.style.filter = "hue-rotate(140deg)"; 
-                container.classList.add("error-shake");
-            } 
-            else if (state === 'success') {
-                playSound('success');
-                img.style.borderColor = "var(--success-color)";
-                img.style.boxShadow = "0 0 25px var(--success-color)";
-                img.style.transform = "rotate(360deg) scale(1.1)";
-                if (arm) {
-                    arm.style.transform = "translateY(12px)";
-                    setTimeout(() => arm.style.transform = "translateY(0)", 600);
-                }
+            if (!img || !container) {
+                console.warn("No s'ha trobat l'avatar al document.");
+            return;
             }
-        }
 
-        // 4. SISTEMA DE FASES
-        function initializePhase(phaseNum) {
-            gameState.phase = phaseNum;
-            gameState.solvedCLI = false;
-            updateStatsDisplay();
+            const arm = container.querySelector(".g-arm");
 
-            document.getElementById("hud-objective-text").innerText = PROMPTS[phaseNum];
-            unlockCommandsForPhase(phaseNum);
+            const validStates = [
+                "idle",
+                "talking",
+                "error",
+                "success"
+            ];
 
-            if (phaseNum === 1) {
-                printToTerminal("[SISTEMA CENTRAL]: Terminal de seguretat activada. Bus d'instruccions lliure.", 'system');
-                setGladosState('idle');
-                focusCLI();
-            } else if (phaseNum === 2) {
-                gameState.currentPath = "/";
-                updatePromptPath();
-                printToTerminal("[SISTEMA CENTRAL]: Comanda unzip habilitada per al sector de backups.", 'system');
-                setGladosState('idle');
-                focusCLI();
-            } else if (phaseNum === 3) {
-                gameState.currentPath = "/";
-                updatePromptPath();
-                printToTerminal("[SISTEMA CENTRAL]: Protocol de xarxa obert. Diagnòstic de nodes actiu.", 'system');
-                setGladosState('idle');
-                focusCLI();
-            } else if (phaseNum === 4) {
-                gameState.currentPath = "/";
-                updatePromptPath();
-                printToTerminal("[SISTEMA CENTRAL]: Quarantena perimetral aïllada. Utilitzeu netstat.", 'system');
-                setGladosState('idle');
-                focusCLI();
+            if (!validStates.includes(state)) {
+                state = "idle";
+            }
+
+            // Eliminem els estats visuals anteriors
+            container.classList.remove(
+                "state-idle",
+                "state-talking",
+                "state-error",
+                "state-success",
+                "error-shake",
+                "success-pulse",
+                "talking-pulse"
+            );
+
+            // Posem l'estat nou
+            container.classList.add(`state-${state}`);
+
+            // Reiniciem els estils que abans modificaves directament
+            img.style.transform = "";
+            img.style.filter = "";
+            img.style.borderColor = "";
+            img.style.boxShadow = "";
+
+            if (arm) {
+                arm.style.transform = "";
+            }
+
+            // Accions especials segons l'estat
+            if (state === "error") {
+                if (typeof playSound === "function") {
+                    playSound("glitch");
+                }
+
+            // Forcem que l'animació es pugui repetir
+                container.classList.remove("error-shake");
+
+                void container.offsetWidth;
+
+                container.classList.add("error-shake");
+            }
+
+            if (state === "success") {
+                if (typeof playSound === "function") {
+                    playSound("success");
+                }
+
+                container.classList.remove("success-pulse");
+
+                void container.offsetWidth;
+
+                container.classList.add("success-pulse");
             }
         }
 
@@ -2019,5 +2020,6 @@ ${hint}`);
             }
         }
     </script>
+    <script src="js/avatar.js" defer></script>
 </body>
 </html>
