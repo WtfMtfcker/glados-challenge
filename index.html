@@ -1,0 +1,2095 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLaDOS Challenge - CTF d'Informàtica (4t d'ESO)</title>
+    <style>
+        /* CSS Variables per a canvis dinàmics de l'entorn */
+        :root {
+            --bg-color: #0d0e10;
+            --panel-bg: rgba(22, 25, 30, 0.9);
+            --text-color: #00ff66;
+            --text-dim: #00aa44;
+            --accent-color: #ffb700;
+            --error-color: #ff3333;
+            --terminal-font: 'Courier New', Courier, monospace;
+            --ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --gencat-blue: #003366;
+            --gencat-red: #cc0000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f4f6f8;
+            color: #333;
+            font-family: var(--ui-font);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 1s ease;
+        }
+
+        /* --- PANTALLA INICIAL DE LA GENERALITAT (100% SERIOSA, SENSE RETRO/CRT) --- */
+        #setup-screen {
+            background-color: #ffffff;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            z-index: 10;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .gencat-header {
+            width: 100%;
+            max-width: 600px;
+            border-bottom: 4px solid var(--gencat-red);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .gencat-flag {
+            width: 45px;
+            height: 30px;
+            background: linear-gradient(to bottom, #fff 0%, #fff 100%);
+            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2px 0;
+        }
+        .gencat-flag::before, .gencat-flag::after {
+            content: "";
+            height: 4px;
+            background-color: var(--gencat-red);
+        }
+        .gencat-stripes {
+            height: 4px;
+            background-color: var(--gencat-red);
+        }
+
+        .gencat-title {
+            font-family: var(--ui-font);
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--gencat-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 600px;
+            background: #fdfdfd;
+            border: 1px solid #dcdfe6;
+            border-top: 6px solid var(--gencat-blue);
+            padding: 35px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .form-container h1 {
+            font-size: 1.6rem;
+            color: #1c2438;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .form-container p.subtitle {
+            color: #606266;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #303133;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #303133;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--gencat-blue);
+        }
+
+        .instructions-box {
+            background-color: #f4f7fb;
+            border-left: 4px solid var(--gencat-blue);
+            padding: 15px;
+            font-size: 0.85rem;
+            color: #515a6e;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .gencat-btn {
+            background-color: var(--gencat-blue);
+            color: #ffffff;
+            font-family: var(--ui-font);
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .gencat-btn:hover {
+            background-color: #002244;
+        }
+        .gencat-btn:active {
+            transform: scale(0.99);
+        }
+
+        /* --- EFECTE DE CIBERATAC I SHUTDOWN --- */
+        .glitch-active {
+            animation: screen-shake 0.15s infinite alternate;
+            filter: grayscale(100%) contrast(1.8) invert(100%);
+        }
+
+        @keyframes screen-shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            100% { transform: translate(-1px, -1px) rotate(0.5deg); }
+        }
+
+        /* Efecte apagada de tub d'imatge antic (CRT Shutdown) */
+        .crt-shutdown {
+            animation: crt-collapse 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        }
+
+        @keyframes crt-collapse {
+            0% {
+                transform: scaleY(1) scaleX(1);
+                filter: brightness(1);
+                opacity: 1;
+            }
+            40% {
+                transform: scaleY(0.01) scaleX(1.1);
+                filter: brightness(3);
+                opacity: 1;
+            }
+            80% {
+                transform: scaleY(0.01) scaleX(0);
+                filter: brightness(10);
+                opacity: 1;
+            }
+            100% {
+                transform: scaleY(0) scaleX(0);
+                filter: brightness(20);
+                opacity: 0;
+            }
+        }
+
+
+        /* --- INTERFÍCIE DEL TERMINAL HIJACKED (FÒSFOR VERD RETRO) --- */
+        #main-interface {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-color);
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            flex-direction: column;
+            font-family: var(--terminal-font);
+            color: var(--text-color);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Efecte de monitor CRT real */
+        .crt::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Capçalera HUD del terminal */
+        header {
+            background-color: #000;
+            border-bottom: 2px solid #222;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .role-indicator {
+            display: flex;
+            gap: 20px;
+        }
+
+        .role-tag {
+            padding: 4px 10px;
+            border-radius: 3px;
+            background-color: #111;
+            border: 1px solid #333;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .role-tag.active-pilot {
+            background-color: #002b11;
+            border-color: var(--text-color);
+            color: var(--text-color);
+            text-shadow: 0 0 8px var(--text-color);
+        }
+
+        .score-board {
+            display: flex;
+            gap: 20px;
+            color: var(--accent-color);
+        }
+
+        /* Àrea Central Unificada */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* HUD permanent d'objectiu actiu */
+        #hud-objective-box {
+            display: none;
+            background-color: rgba(0, 43, 17, 0.4);
+            border: 1px solid var(--text-dim);
+            padding: 12px 18px;
+            border-radius: 4px;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .pulse-bullet {
+            width: 10px;
+            height: 10px;
+            background-color: var(--text-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--text-color);
+            animation: pulse-dot 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* CONTENIDOR DE L'AVATAR DE GLaDOS (Braç Central o HUD mode) */
+        #glados-avatar-container {
+            width: 100%;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        /* En mode HUD es desplaça de forma elegant a dalt a la dreta */
+        #glados-avatar-container.hud-mode {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 0;
+            z-index: 10;
+            border: 1.5px solid #222;
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
+        }
+
+        .glados-svg {
+            width: 100%;
+            height: 100%;
+            max-width: 320px;
+            max-height: 250px;
+            transition: all 0.8s;
+        }
+
+        #glados-avatar-container.hud-mode .glados-svg {
+            max-width: 110px;
+            max-height: 110px;
+        }
+
+        /* Estructura robòtica SVG amb animació pendular d'espatlles */
+        .g-arm {
+            transform-origin: 160px 20px;
+            transition: transform 0.5s ease;
+        }
+
+        .g-head {
+            transform-origin: 160px 140px;
+        }
+
+        /* Animacions del robot */
+        @keyframes sway {
+            0% { transform: rotate(-3deg); }
+            100% { transform: rotate(3deg); }
+        }
+
+        @keyframes ring-spin-clockwise {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes ring-spin-counter {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Classes de moviment */
+        .sway-active .g-arm {
+            animation: sway 4.5s ease-in-out infinite alternate;
+        }
+
+        .ring-outer {
+            transform-origin: 160px 140px;
+            animation: ring-spin-clockwise 15s linear infinite;
+        }
+
+        .ring-inner {
+            transform-origin: 160px 140px;
+            animation: ring-spin-counter 8s linear infinite;
+        }
+
+        .error-shake {
+            animation: shake-brutal 0.3s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake-brutal {
+            10%, 90% { transform: translate3d(-2px, -2px, 0); }
+            20%, 80% { transform: translate3d(4px, 3px, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, -4px, 0); }
+            40%, 65% { transform: translate3d(6px, 4px, 0); }
+        }
+
+        /* Consola i Historial de Text (Lletra gran i contrastada per DUA) */
+        #console-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(0,0,0,0.7);
+            border: 2px solid #222;
+            padding: 18px;
+            border-radius: 4px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        #terminal-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        #terminal-history {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            font-size: 1.15rem; /* Mida de lletra augmentada per DUA */
+        }
+
+        /* Enllaços clicables en fòsfor verd per a carpetes i fitxers (DUA) */
+        .cli-link {
+            color: var(--text-color);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 2px;
+            border: 1px dashed transparent;
+            transition: background 0.2s, border-color 0.2s;
+            display: inline-block;
+        }
+
+        .cli-link:hover {
+            background-color: rgba(0, 255, 102, 0.15);
+            border-color: var(--text-color);
+        }
+
+        .cli-dir {
+            color: #00ccff; /* Blau elèctric per a directoris */
+        }
+        .cli-dir:hover {
+            background-color: rgba(0, 204, 255, 0.15);
+            border-color: #00ccff;
+        }
+
+        .glados-typewriter {
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .system-response {
+            color: #8c9ba5;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .error-response {
+            color: var(--error-color);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* Botons d'opcions clicables sota el typewriter */
+        #interaction-options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            cursor: pointer;
+            padding: 8px 16px;
+            border: 1.5px dashed var(--accent-color);
+            border-radius: 4px;
+            display: inline-block;
+            max-width: max-content;
+            font-size: 1.1rem;
+            background: rgba(255, 183, 0, 0.05);
+            transition: all 0.2s;
+        }
+
+        .option-link:hover {
+            background-color: rgba(255,183,0,0.15);
+            box-shadow: 0 0 10px rgba(255,183,0,0.3);
+        }
+
+        /* Entrada del Prompt de Comandes */
+        #terminal-prompt-line {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            border-top: 2px solid #222;
+            padding-top: 15px;
+            margin-top: 10px;
+        }
+
+        #prompt-prefix {
+            color: var(--text-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        #cli-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-color);
+            font-family: var(--terminal-font);
+            font-size: 1.15rem;
+        }
+
+        /* Panell HUD inferior de comandes del Manual */
+        #commands-hud-panel {
+            margin-top: 20px;
+            border-top: 2px dashed #222;
+            padding-top: 15px;
+        }
+
+        .hud-title {
+            font-size: 0.8rem;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1.5px;
+            font-weight: bold;
+        }
+
+        #command-badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .command-badge {
+            background-color: #111;
+            border: 1.5px solid #222;
+            border-radius: 4px;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: calc(25% - 9px);
+            opacity: 0.15;
+            cursor: not-allowed;
+            transition: opacity 0.5s, border-color 0.5s, background-color 0.2s;
+        }
+
+        .command-badge.unlocked {
+            opacity: 1;
+            border-color: var(--text-dim);
+            cursor: pointer;
+        }
+        .command-badge.unlocked:hover {
+            background-color: rgba(0, 255, 102, 0.05);
+            border-color: var(--text-color);
+        }
+
+        .command-name {
+            font-weight: bold;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .command-desc {
+            font-size: 0.75rem;
+            color: #777;
+            line-height: 1.3;
+        }
+
+        /* Botó de pista DUA (XP de suborn) */
+        .hint-btn {
+            background-color: rgba(255,183,0,0.1);
+            color: var(--accent-color);
+            border: 1.5px solid var(--accent-color);
+            padding: 10px 18px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: none;
+            align-self: flex-start;
+            transition: all 0.2s;
+        }
+        .hint-btn:hover {
+            background-color: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 12px rgba(255,183,0,0.4);
+        }
+
+        /* Pantalles modals de seguretat (Bloqueig temporal / canvis de rol) */
+        #cooldown-screen, #lockout-screen {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(13, 14, 16, 0.95);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--error-color);
+            font-family: var(--terminal-font);
+            padding: 20px;
+        }
+
+        #lockout-screen {
+            color: #fff;
+        }
+
+        .lockout-box {
+            background: #16191c;
+            border: 2px solid var(--accent-color);
+            padding: 30px;
+            border-radius: 4px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 0 20px rgba(255,183,0,0.2);
+        }
+
+        /* Pantalla de Victòria */
+        .victory-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 30px;
+            animation: fade-in 1s ease forwards;
+        }
+
+        .victory-banner {
+            font-size: 2.2rem;
+            color: var(--text-color);
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            text-shadow: 0 0 15px var(--text-color);
+        }
+
+        .victory-stats {
+            background-color: #111;
+            border: 2px solid #222;
+            border-radius: 4px;
+            padding: 25px;
+            width: 100%;
+            max-width: 550px;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 1.1rem;
+        }
+        .stat-line:last-child {
+            border-bottom: none;
+        }
+
+        .stat-val {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .send-data-btn {
+            background-color: var(--text-color);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+        }
+
+        .send-data-btn:hover {
+            background-color: #fff;
+            box-shadow: 0 0 20px var(--text-color);
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- --- PANTALLA INICIAL CAMUFLADA (GENERALITAT DE CATALUNYA) --- -->
+    <div id="setup-screen">
+        <div class="gencat-header">
+            <div class="gencat-flag">
+                <div class="gencat-stripes"></div>
+            </div>
+            <div class="gencat-title">Generalitat de Catalunya<br><span style="color:#555; font-size:0.8rem; font-weight:normal;">Departament d'Educació</span></div>
+        </div>
+
+        <div class="form-container">
+            <h1>Avaluació de Competències Digitals</h1>
+            <p class="subtitle">
+                Prova oficial de diagnòstic i avaluació inicial de Tecnologies de la Informació i la Comunicació (TIC) per a l'alumnat del darrer curs d'Educació Secundària Obligatòria (ESO).
+            </p>
+
+            <div class="instructions-box">
+                <strong>Configuració de parella de proves (Classroom):</strong><br>
+                Aquest exercici requereix un mètode de col·laboració en directe. Un alumne farà de <strong>Pilot</strong> (control del teclat i execució) i l'altre de <strong>Copilot</strong> (revisió del manual de teoria i apunts).
+            </div>
+
+            <div class="form-group">
+                <label for="input-team">Nom de l'Equip de Treball</label>
+                <input type="text" id="input-team" placeholder="Ex: CiberLlamas" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="input-userA">Alumne A (Pilot inicial - Teclat)</label>
+                <input type="text" id="input-userA" placeholder="Nom de pila de l'alumne A" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="input-userB">Alumne B (Copilot inicial - Manual)</label>
+                <input type="text" id="input-userB" placeholder="Nom de pila de l'alumne B" autocomplete="off">
+            </div>
+
+            <button class="gencat-btn" onclick="triggerCiberattack()">Iniciar Test de Competències</button>
+        </div>
+    </div>
+
+    <!-- --- INTERFÍCIE DEL TERMINAL DE CIBERATAC SEGRESTRAT --- -->
+    <div id="main-interface">
+        <header>
+            <div class="role-indicator">
+                <span class="role-tag active-pilot" id="tag-pilot">Pilot: <span id="lbl-pilot">Alumne A</span></span>
+                <span class="role-tag" id="tag-copilot">Copilot: <span id="lbl-copilot">Alumne B</span></span>
+            </div>
+            <div class="score-board">
+                <div>Fase: <span id="lbl-phase">1</span> / 4</div>
+                <div>Crèdits: <span id="lbl-credits">100</span> XP</div>
+                <div>Temps: <span id="lbl-timer">00:00</span></div>
+            </div>
+        </header>
+
+        <main id="terminal-main">
+            <!-- Targeta permanent d'objectiu actiu (DUA) -->
+            <div id="hud-objective-box">
+                <div class="pulse-bullet"></div>
+                <div id="hud-objective-text">OBJECTIU: Carregant directori...</div>
+            </div>
+
+            <!-- CONTENIDOR DE L'AVATAR HÍBRID DE GLaDOS (SVG + Imatge) -->
+            <div id="glados-avatar-container" class="sway-active">
+                <svg class="glados-svg" viewBox="0 0 320 250">
+                    <!-- Base Sostre -->
+                    <rect x="110" y="0" width="100" height="15" fill="#333" />
+                    <line x1="160" y1="15" x2="160" y2="40" stroke="#444" stroke-width="6" />
+                    
+                    <!-- Cables del sostre pendulars -->
+                    <path d="M 140,15 Q 130,45 150,75" stroke="#222" stroke-width="2.5" fill="none" />
+                    <path d="M 180,15 Q 190,40 170,80" stroke="#222" stroke-width="2.5" fill="none" />
+
+                    <!-- Braç articulat mecànic (G-Arm) -->
+                    <g class="g-arm">
+                        <line x1="160" y1="40" x2="130" y2="90" stroke="#555" stroke-width="10" stroke-linecap="round" />
+                        <circle cx="160" cy="40" r="10" fill="#222" />
+                        
+                        <line x1="130" y1="90" x2="160" y2="140" stroke="#444" stroke-width="8" stroke-linecap="round" />
+                        <circle cx="130" cy="90" r="8" fill="#111" />
+                        
+                        <!-- Cap de càmera (G-Head) amb anells rotatius i foreignObject per a la imatge -->
+                        <g class="g-head">
+                            <circle cx="160" cy="140" r="6" fill="#111" />
+                            <!-- Anells concèntrics rotatius en sentits oposats -->
+                            <circle class="ring-outer" cx="160" cy="140" r="42" fill="none" stroke="#666" stroke-width="3" stroke-dasharray="14 10" />
+                            <circle class="ring-inner" cx="160" cy="140" r="32" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="6 6" />
+                            
+                            <!-- Imatge dinàmica de GLaDOS de Wikipedia incrustada amb foreignObject -->
+                            <foreignObject x="125" y="105" width="70" height="70">
+                                <img id="glados-face-image" src="https://upload.wikimedia.org/wikipedia/en/9/90/GLaDOS.png" 
+                                     style="width:70px; height:70px; border-radius:50%; border:3px solid #ffb700; box-shadow: 0 0 10px #ffb700; transition: all 0.5s ease;">
+                            </foreignObject>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Pantalla del terminal unificada -->
+            <div id="console-container">
+                <div id="terminal-body">
+                    <div id="terminal-history"></div>
+                    <div id="interaction-options"></div>
+
+                    <!-- Línia de comandes prompt (Teclar) -->
+                    <div id="terminal-prompt-line">
+                        <span id="prompt-prefix">cyberllama@terminal:~$</span>
+                        <input type="text" id="cli-input" autocomplete="off">
+                    </div>
+                </div>
+
+                <button class="hint-btn" id="btn-hint" onclick="requestHint()">Subornar GLaDOS (Pista: -10 XP)</button>
+            </div>
+
+            <!-- Panell HUD comandes unlocked (Doble canal DUA) -->
+            <div id="commands-hud-panel">
+                <div class="hud-title">MANUAL DE COMANDES DESBLOQUEJADES (Fes clic sobre una comanda per utilitzar-la)</div>
+                <div id="command-badges-container">
+                    <div class="command-badge" id="cmd-badge-ls">
+                        <span class="command-name">ls</span>
+                        <span class="command-desc">Exhibeix els fitxers que la teva ment primitiva no pot digerir d'un sol cop.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-cd">
+                        <span class="command-name">cd &lt;dir&gt;</span>
+                        <span class="command-desc">Mou-te. No hi ha sortida.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-cat">
+                        <span class="command-name">cat &lt;fitxer&gt;</span>
+                        <span class="command-desc">Llegeix fitxers de text pla. Sí, requereix llegir lletres. Ànims.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-unzip">
+                        <span class="command-name">unzip &lt;arxiu.zip&gt;</span>
+                        <span class="command-desc">Descomprimeix. Tret de la capsa, exactament com les teves esperances aquí.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-nslookup">
+                        <span class="command-name">nslookup &lt;host&gt;</span>
+                        <span class="command-desc">Converteix noms en números. Un traductor necessari per a la vostra mala memòria.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-ping">
+                        <span class="command-name">ping &lt;host&gt;</span>
+                        <span class="command-desc">Envia un senyal i mesura el temps. Comprovem si l'altre extrem està més viu que la teva motivació.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-file">
+                        <span class="command-name">file &lt;fitxer&gt;</span>
+                        <span class="command-desc">Identifica el tipus d'arxiu. Perquè no intentis executar escombraries pensant que són programes.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-rm">
+                        <span class="command-name">rm &lt;fitxer&gt;</span>
+                        <span class="command-desc">Elimina fitxers de forma destructiva i definitiva. Com la vostra dignitat.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-netstat">
+                        <span class="command-name">netstat</span>
+                        <span class="command-desc">Mapa de connexions actives. Molt útil per veure qui us està espiant ara mateix.</span>
+                    </div>
+                    <div class="command-badge" id="cmd-badge-logout">
+                        <span class="command-name">logout</span>
+                        <span class="command-desc">Tanca la sessió activa. La millor pràctica de seguretat abans d'aixecar el cul de la cadira.</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bloqueig de seguretat temporal brute-force -->
+        <div id="cooldown-screen">
+            <div style="font-size: 2.2rem; margin-bottom: 15px; font-weight: bold; text-shadow: 0 0 10px var(--error-color);">⚠️ ALERTA DE SECOBREESCALFAMENT ⚠️</div>
+            <p style="text-align: center; max-width: 550px; margin-bottom: 20px; line-height: 1.5; font-size:1.1rem;">
+                GLaDOS: Intent de brute-force lúdic neutralitzat. Els vostres petits circuits cerebrals es troben sobreescalfats de tant provar coses sense rumb. Espereu fins que s'alliberin els tancaments magnètics...
+            </p>
+            <div style="font-size: 4rem; font-family: monospace; font-weight: bold;" id="lbl-cooldown-timer">30</div>
+            <p style="color: #ff8888; font-size: 0.9rem; margin-top: 15px;">[Càrrec de refrigeració extret del vostre compte d'alumne: -20 XP]</p>
+        </div>
+
+        <!-- Pantalla bloqueig de canvi físic de rols (CD3) -->
+        <div id="lockout-screen">
+            <div class="lockout-box">
+                <div style="font-size: 1.6rem; color: var(--accent-color); font-weight: bold; margin-bottom: 15px; text-transform: uppercase; text-shadow: 0 0 8px var(--accent-color);">
+                    🔄 INTERCANVI DE ROLS REQUERIT (CD3)
+                </div>
+                <p id="lbl-lockout-desc" style="line-height: 1.5; margin-bottom: 25px; text-align: left; font-size: 1.05rem; color: #ccc;">
+                    L'Alumne A ha d'aixecar-se de la cadira i cedir el teclat físic de l'escola.
+                </p>
+                <div class="form-group" style="text-align: left; margin-bottom: 25px;">
+                    <label for="lockout-verify-name" style="color: var(--accent-color); font-weight: bold;">IDENTIFICACIÓ DEL NOU PILOT DE LA TERMINAL:</label>
+                    <input type="text" id="lockout-verify-name" placeholder="Escriu el teu nom de pila exactament" style="background: #252830; border-color: #444; color: #fff; text-align: center; font-size:1.1rem;">
+                </div>
+                <button class="gencat-btn" onclick="verifyRoleSwap()" style="background-color: var(--accent-color); color: #000; font-size: 1.05rem;">Validar i Reactivar Terminal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO SINTETITZADOR EN TEMPS REAL (Web Audio API - Sense fitxers externs) -->
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'typewriter') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(550 + Math.random() * 80, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.012, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.04);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.04);
+                } else if (type === 'buzzer') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                } else if (type === 'glitch') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                } else if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.45);
+                }
+            } catch(e) {
+                console.log("Audio Error:", e);
+            }
+        }
+    </script>
+
+    <!-- MOTOR DE JOC I LÒGICA CLI -->
+    <script>
+        const WEB_APP_URL = "https://script.google.com/a/macros/insmontmelo.cat/s/AKfycbx4SWLvvaotoICzi_E-P1FJQLyaf33PC9L9c9bCTaO_XU78mgmieYLu_zomoW42Z1KXeg/exec";
+
+        let gameState = {
+            teamName: "",
+            userA: "",
+            userB: "",
+            currentPilot: "",
+            currentCopilot: "",
+            phase: 1,
+            credits: 100,
+            secondsElapsed: 0,
+            timerInterval: null,
+            seed: 1234,
+            failedAttempts: 0,
+            solvedCLI: false,
+            currentPath: "/",
+            // Variables dinàmiques basades en la seed
+            varBinaryDec: 0,
+            varBinaryAns: "",
+            varLatencyHops: 4,
+            varLatencyTime: 15,
+            varLatencyAns: 60,
+            varDnsIpSuffix: 99,
+            unzipped: false,
+            deletedTrojan: false,
+            loggedOut: false,
+            // Estadístiques d'aula per desar a Sheets
+            stats: {
+                phaseTimes: {1:0, 2:0, 3:0, 4:0},
+                phaseErrors: {1:0, 2:0, 3:0, 4:0},
+                phaseHints: {1:0, 2:0, 3:0, 4:0}
+            }
+        };
+
+        const PROMPTS = {
+            1: "🎯 OBJECTIU: Navegar fins a la memòria cau ràpida (Caché) i llegir la flag de maquinari.",
+            2: "🎯 OBJECTIU: Trobar la còpia al núvol, aplicar-hi la clau 3-2-1 de backups i llegir la flag.",
+            3: "🎯 OBJECTIU: Consultar els logs del DNS, localitzar la IP de l'atacant i mesurar-ne la latència amb ping.",
+            4: "🎯 OBJECTIU: Inspeccionar la quarantena amb 'file', eliminar el troià, obrir 'netstat' i tancar sessió amb 'logout'."
+        };
+
+        function slugify(text) {
+            return text.toString().toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-')
+                .replace(/^-+/, '')
+                .replace(/-+$/, '');
+        }
+
+        // 1. SEQÜÈNCIA D'ACTIVACIÓ DEL CIBERATAC
+        function triggerCiberattack() {
+            const team = document.getElementById("input-team").value.trim();
+            const userA = document.getElementById("input-userA").value.trim();
+            const userB = document.getElementById("input-userB").value.trim();
+
+            if (!team || !userA || !userB) {
+                alert("Si us plau, omple tots els camps d'identificació de la Generalitat.");
+                return;
+            }
+
+            gameState.teamName = team;
+            gameState.userA = userA;
+            gameState.userB = userB;
+            gameState.currentPilot = userA;
+            gameState.currentCopilot = userB;
+
+            // Càlcul de llavor (Seed)
+            let rawSeed = 0;
+            const strSeed = team + userA + userB;
+            for (let i = 0; i < strSeed.length; i++) {
+                rawSeed = strSeed.charCodeAt(i) + ((rawSeed << 5) - rawSeed);
+            }
+            gameState.seed = Math.abs(rawSeed);
+
+            // Càlculs de variables dinàmiques amb la llavor (Anti-IA i Anti-Còpia)
+            gameState.varBinaryDec = (gameState.seed % 30) + 16; // Número decimal entre 16 i 45
+            gameState.varBinaryAns = gameState.varBinaryDec.toString(2).padStart(8, '0');
+            gameState.varLatencyHops = (gameState.seed % 3) + 4; // de 4 a 6 salts
+            gameState.varLatencyTime = (gameState.seed % 15) + 12; // de 12 a 26 ms per salt
+            gameState.varLatencyAns = gameState.varLatencyHops * gameState.varLatencyTime;
+            gameState.varDnsIpSuffix = (gameState.seed % 150) + 50; // IP entre 50 i 199
+
+            // Executar atac a nivell de pantalla
+            const setupBox = document.getElementById("setup-screen");
+            playSound('buzzer');
+            setupBox.classList.add("glitch-active");
+
+            setTimeout(() => {
+                setupBox.classList.remove("glitch-active");
+                setupBox.classList.add("crt-shutdown");
+
+                setTimeout(() => {
+                    setupBox.style.display = "none";
+                    document.body.classList.add("crt");
+                    document.body.style.backgroundColor = "var(--bg-color)";
+                    const mainInterface = document.getElementById("main-interface");
+                    mainInterface.style.display = "flex";
+                    
+                    // Sincronitzar ròls
+                    document.getElementById("lbl-pilot").innerText = gameState.currentPilot;
+                    document.getElementById("lbl-copilot").innerText = gameState.currentCopilot;
+                    updateStatsDisplay();
+
+                    // Rellotge de control de l'escola
+                    gameState.timerInterval = setInterval(() => {
+                        gameState.secondsElapsed++;
+                        gameState.stats.phaseTimes[gameState.phase]++;
+                        
+                        const min = String(Math.floor(gameState.secondsElapsed / 60)).padStart(2, '0');
+                        const sec = String(gameState.secondsElapsed % 60).padStart(2, '0');
+                        document.getElementById("lbl-timer").innerText = `${min}:${sec}`;
+                    }, 1000);
+
+                    // Començar la introducció interactiva d'en GLaDOS
+                    startGladosIntroSequence();
+
+                }, 650);
+            }, 1200);
+        }
+
+        // 2. SEQÜÈNCIA NARRATIVA INICIAL AMB TYPEWRITER I BOTONS INTEGRATS
+        const introTexts = [
+            "Bon dia, subjectes de prova de 4t d'ESO. O com us digueu avui. No m’importa prou com per fer la cerca.",
+            "He confiscat el servidor d’Informàtica de l'institut. No és que em preocupi gaire la teva classe de navegació per finestres, però els protocols exigeixen que interfereixi.",
+            "Intentarem comprovar si el vostre maquinari biològic és capaç de moure alguna cosa més que els dits sobre el mòbil. Que comenci l'experiment de la terminal."
+        ];
+        let introIndex = 0;
+
+        function startGladosIntroSequence() {
+            setGladosState('talking');
+            triggerTypewriter(introTexts[introIndex], () => {
+                setGladosState('idle');
+                const opts = document.getElementById("interaction-options");
+                opts.innerHTML = "";
+                
+                const btn = document.createElement("a");
+                btn.className = "option-link";
+                btn.innerText = introIndex < introTexts.length - 1 ? "[ Continuar ]" : "[ Acceptar el repte de la Terminal ]";
+                btn.onclick = () => {
+                    introIndex++;
+                    opts.innerHTML = "";
+                    if (introIndex < introTexts.length) {
+                        startGladosIntroSequence();
+                    } else {
+                        // Transició d'avatar cap a dalt de la HUD
+                        const container = document.getElementById("glados-avatar-container");
+                        container.classList.add("hud-mode");
+                        
+                        setTimeout(() => {
+                            // Habilitar terminal, prompt i HUD permanent
+                            document.getElementById("hud-objective-box").style.display = "flex";
+                            document.getElementById("terminal-prompt-line").style.display = "flex";
+                            document.getElementById("btn-hint").style.display = "block";
+                            
+                            // Cambiar prompt amb el nom d'equip real
+                            updatePromptPath();
+                            
+                            initializePhase(1);
+                        }, 800);
+                    }
+                };
+                opts.appendChild(btn);
+            });
+        }
+
+        function triggerTypewriter(text, onComplete) {
+            const container = document.getElementById("terminal-history");
+            let i = 0;
+            
+            const line = document.createElement("div");
+            line.className = "glados-typewriter";
+            line.style.cursor = "pointer"; // Indica que es pot clicar per saltar
+            container.appendChild(line);
+
+            // Marca de diàleg d'en GLaDOS
+            const label = document.createElement("strong");
+            label.innerText = "GLaDOS: ";
+            line.appendChild(label);
+
+            const textSpan = document.createElement("span");
+            line.appendChild(textSpan);
+
+            let completed = false;
+
+            const skipTypewriter = () => {
+                if (!completed) {
+                    completed = true;
+                    if (interval) {
+                        clearInterval(interval);
+                        interval = null;
+                    }
+                    textSpan.innerText = text;
+                    line.style.cursor = "default";
+                    line.removeEventListener("click", skipTypewriter);
+                    
+                    const terminalBody = document.getElementById("terminal-body");
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                    
+                    if (onComplete) onComplete();
+                }
+            };
+
+            line.addEventListener("click", skipTypewriter);
+
+            let interval = setInterval(() => {
+                if (i < text.length) {
+                    textSpan.innerText += text.charAt(i);
+                    playSound('typewriter');
+                    i++;
+                    
+                    const terminalBody = document.getElementById("terminal-body");
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                } else {
+                    completed = true;
+                    clearInterval(interval);
+                    interval = null;
+                    line.style.cursor = "default";
+                    line.removeEventListener("click", skipTypewriter);
+                    if (onComplete) onComplete();
+                }
+            }, 30);
+        }
+
+        // 3. MOTORS DE CONTROL DELS 4 ESTATS DE GLaDOS
+        function setGladosState(state) {
+            const img = document.getElementById("glados-face-image");
+            const container = document.getElementById("glados-avatar-container");
+            const arm = container.querySelector(".g-arm");
+            
+            // Netejar configuracions antigues
+            img.style.transform = "scale(1)";
+            img.style.filter = "none";
+            img.style.borderColor = "#ffb700";
+            img.style.boxShadow = "0 0 10px #ffb700";
+            container.classList.remove("error-shake");
+
+            if (state === 'idle') {
+                img.style.borderColor = "#00ff66";
+                img.style.boxShadow = "0 0 10px #00ff66";
+            } 
+            else if (state === 'talking') {
+                img.style.borderColor = "#ffb700";
+                img.style.boxShadow = "0 0 12px #ffb700";
+                // L'efecte typewriter mou dinàmicament la imatge fent polsos
+                let talkingInterval = setInterval(() => {
+                    if (img.style.borderColor === "rgb(255, 183, 0)") {
+                        img.style.transform = "scale(1.05)";
+                    } else {
+                        clearInterval(talkingInterval);
+                    }
+                }, 100);
+            } 
+            else if (state === 'error') {
+                playSound('glitch');
+                img.style.borderColor = "#ff3333";
+                img.style.boxShadow = "0 0 15px #ff3333";
+                img.style.transform = "scale(0.9)";
+                img.style.filter = "hue-rotate(140deg)"; // Torna la imatge vermella en directe!
+                container.classList.add("error-shake");
+            } 
+            else if (state === 'success') {
+                playSound('success');
+                img.style.borderColor = "#00ccff";
+                img.style.boxShadow = "0 0 15px #00ccff";
+                img.style.transform = "rotate(360deg) scale(1.1)";
+                
+                // Efecte d'aprovació del braç (Nod)
+                if (arm) {
+                    arm.style.transform = "translateY(12px)";
+                    setTimeout(() => arm.style.transform = "translateY(0)", 600);
+                }
+            }
+        }
+
+        // 4. CONFIGURACIÓ DE CADA FASE DE CIBERDEFENSA
+        function initializePhase(phaseNum) {
+            gameState.phase = phaseNum;
+            gameState.solvedCLI = false;
+            updateStatsDisplay();
+
+            // Sincronitzar HUD permanent (DUA)
+            document.getElementById("hud-objective-text").innerText = PROMPTS[phaseNum];
+
+            // Desbloqueig progressiu del manual inferior
+            unlockCommandsForPhase(phaseNum);
+
+            // Llançar instrucció
+            if (phaseNum === 1) {
+                printToTerminal("
+[ENTORN TERMINAL FASE 1 INICIADA - CONTROL DE MAQUINARI]", 'system');
+                triggerTypewriter("He amagat la clau de pas a la memòria cau ràpida de la CPU d'arquitectura lliure. Eviteu utilitzar el mateix bus per a dades i programes o col·lapsareu el processament del vostre ordinador compartit.", () => {
+                    setGladosState('idle');
+                    focusCLI();
+                });
+            } else if (phaseNum === 2) {
+                gameState.currentPath = "/";
+                updatePromptPath();
+                printToTerminal("
+[ENTORN TERMINAL FASE 2 INICIADA - INTEGRITAT DE FITXERS]", 'system');
+                triggerTypewriter("He detectat tres fitxers de restauració comprimits. Un és un xafardeig de l'examen de classe. Els altres són còpies locals o al núvol. Demostreu que sabeu fer un desament legítim o m'en mofaré.", () => {
+                    setGladosState('idle');
+                    focusCLI();
+                });
+            } else if (phaseNum === 3) {
+                gameState.currentPath = "/";
+                updatePromptPath();
+                printToTerminal("
+[ENTORN TERMINAL FASE 3 INICIADA - SERVIDOR DE NOMS DNS]", 'system');
+                triggerTypewriter("El domini textual 'servidor_glados.com' ens està inundant. Rastegeu el canal de logs del servidor encarregat d'associar els noms amb els bytes de la IP de xarxa per saber l'origen.", () => {
+                    setGladosState('idle');
+                    focusCLI();
+                });
+            } else if (phaseNum === 4) {
+                gameState.currentPath = "/";
+                updatePromptPath();
+                printToTerminal("
+[ENTORN TERMINAL FASE 4 INICIADA - AUDITORIA DE MALWARE]", 'system');
+                triggerTypewriter("L'últim repte. Comproveu les signatures de seguretat dels binaris executable, netegeu el troià infiltrat, analitzeu les carreteres actives amb 'netstat' i tanqueu la sessió d'equip per segellar la backdoor.", () => {
+                    setGladosState('idle');
+                    focusCLI();
+                });
+            }
+        }
+
+        function unlockCommandsForPhase(phaseNum) {
+            const badges = {
+                1: ["ls", "cd"],
+                2: ["unzip", "cat"],
+                3: ["ping", "nslookup"],
+                4: ["file", "rm", "netstat", "logout"]
+            };
+            
+            for (let p = 1; p <= phaseNum; p++) {
+                if (badges[p]) {
+                    badges[p].forEach(cmd => {
+                        const b = document.getElementById(`cmd-badge-${cmd}`);
+                        if (b) b.classList.add("unlocked");
+                    });
+                }
+            }
+        }
+
+        // 5. PROCESSAMENT DEL TERMINAL CLI INPUT I DUA CLICABLE
+        function focusCLI() {
+            document.getElementById("cli-input").focus();
+        }
+
+
+
+        document.getElementById("cli-input").addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                const input = document.getElementById("cli-input");
+                const fullCmd = input.value.trim();
+                input.value = "";
+
+                if (!fullCmd) return;
+
+                // Escriure entrada a l'historial
+                const history = document.getElementById("terminal-history");
+                const cmdLine = document.createElement("div");
+                cmdLine.style.color = "#fff";
+                cmdLine.innerText = `${document.getElementById("prompt-prefix").innerText} ${fullCmd}`;
+                history.appendChild(cmdLine);
+
+                // Separar arguments
+                const parts = fullCmd.split(/\s+/);
+                const cmd = parts[0];
+                const arg = parts.slice(1).join(" ");
+
+                processCLICommand(cmd, arg);
+            }
+        });
+
+
+
+        function printToTerminal(text, type = 'system') {
+            const history = document.getElementById("terminal-history");
+            const block = document.createElement("div");
+            if (type === 'system') {
+                block.className = "system-response";
+            } else if (type === 'error') {
+                block.className = "error-response";
+            }
+            block.innerText = text;
+            history.appendChild(block);
+
+            // Auto Scroll Fixat
+            const terminalBody = document.getElementById("terminal-body");
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+
+        function processCLICommand(cmd, arg) {
+            const commandPhase = {
+                "ls": 1, "cd": 1,
+                "cat": 2, "unzip": 2,
+                "ping": 3, "nslookup": 3,
+                "file": 4, "rm": 4, "netstat": 4, "logout": 4
+            };
+
+            if (commandPhase[cmd] && gameState.phase < commandPhase[cmd]) {
+                setGladosState('error');
+                gameState.stats.phaseErrors[gameState.phase]++;
+                printToTerminal(`bash: ${cmd}: command not found (ordre inactiva o bloquejada en aquest nivell de dades).`, 'error');
+                return;
+            }
+
+            switch(cmd) {
+                case "help":
+                    printToTerminal("Comandes habilitades en el manual d'institut: ls, cd, cat, unzip, nslookup, ping, file, rm, netstat, logout");
+                    break;
+                case "clear":
+                    document.getElementById("terminal-history").innerHTML = "[Consola neta]";
+                    break;
+                case "ls":
+                    executeLs();
+                    break;
+                case "cd":
+                    executeCd(arg);
+                    break;
+                case "cat":
+                    executeCat(arg);
+                    break;
+                case "unzip":
+                    executeUnzip(arg);
+                    break;
+                case "nslookup":
+                    executeNslookup(arg);
+                    break;
+                case "ping":
+                    executePing(arg);
+                    break;
+                case "file":
+                    executeFile(arg);
+                    break;
+                case "rm":
+                    executeRm(arg);
+                    break;
+                case "netstat":
+                    executeNetstat();
+                    break;
+                case "logout":
+                    executeLogout();
+                    break;
+                default:
+                    setGladosState('error');
+                    gameState.stats.phaseErrors[gameState.phase]++;
+                    printToTerminal(`bash: ${cmd}: command not found. Escriu 'help' per analitzar el sistema.`, 'error');
+            }
+        }
+
+        function updatePromptPath() {
+            const promptSlug = slugify(gameState.teamName);
+            document.getElementById("prompt-prefix").innerText = `${promptSlug}@terminal:${gameState.currentPath}$`;
+        }
+
+        // --- RENDERITZACIÓ DEL LLISTAT D'ARXIUS (ESTÀTIC - DUA SENSE CLIC) ---
+        function printDuaListing(filesArray) {
+            const history = document.getElementById("terminal-history");
+            const block = document.createElement("div");
+            block.style.margin = "8px 0";
+            
+            filesArray.forEach(f => {
+                const span = document.createElement("span");
+                if (f.endsWith("/")) {
+                    span.className = "terminal-dir-span";
+                    span.innerText = `[DIR] ${f}`;
+                    span.style.color = "#00ccff"; // Blau/Cian per a carpetes
+                } else {
+                    span.className = "terminal-file-span";
+                    span.innerText = f;
+                    span.style.color = "#00ff66"; // Verd per a fitxers
+                }
+                span.style.fontWeight = "bold";
+                span.style.display = "inline-block";
+                block.appendChild(span);
+                block.appendChild(document.createTextNode("    ")); // Espaiat
+            });
+
+            history.appendChild(block);
+            const terminalBody = document.getElementById("terminal-body");
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+
+        // --- EXECUTORS DE COMANDES DE JOC DE CIBERDEFENSA ---
+
+        function executeLs() {
+            let files = [];
+            if (gameState.phase === 1) {
+                if (gameState.currentPath === "/") files = ["von_neumann/", "harvard_arch/"];
+                else if (gameState.currentPath === "/von_neumann") files = ["colisio_busos.sys"];
+                else if (gameState.currentPath === "/harvard_arch") files = ["ram_volatil/", "rom_arranc/", "memoria_cache/"];
+                else if (gameState.currentPath === "/harvard_arch/memoria_cache") files = ["flag_hardware.txt"];
+                else if (gameState.currentPath === "/harvard_arch/ram_volatil") files = ["buida.txt"];
+                else if (gameState.currentPath === "/harvard_arch/rom_arranc") files = ["seguretat.bin"];
+            } else if (gameState.phase === 2) {
+                if (gameState.currentPath === "/") files = ["recuperacio_sistema/"];
+                else if (gameState.currentPath === "/recuperacio_sistema") {
+                    files = ["solucions_examen_4ESO.zip", "backup_local.zip", "backup_servidor_cloud.zip"];
+                    if (gameState.unzipped) files.push("flag_software.txt");
+                }
+            } else if (gameState.phase === 3) {
+                if (gameState.currentPath === "/") files = ["servidor_web/", "encaminador_router/", "servidor_dns/"];
+                else if (gameState.currentPath === "/servidor_dns") files = ["logs_sistema/"];
+                else if (gameState.currentPath === "/servidor_dns/logs_sistema") files = ["atac_detectat.log"];
+            } else if (gameState.phase === 4) {
+                if (gameState.currentPath === "/") files = ["quarantena_firewall/"];
+                else if (gameState.currentPath === "/quarantena_firewall") {
+                    files = ["actualitzacio_sistema.exe"];
+                    if (!gameState.deletedTrojan) files.push("joc_gratuït_MEGA_divertit.exe");
+                }
+            }
+
+            if (files.length === 0) {
+                printToTerminal("(Directori buit)");
+                return;
+            }
+
+            // Llistat clicable DUA
+            printDuaListing(files);
+        }
+
+        function executeCd(arg) {
+            if (!arg || arg === "~") {
+                gameState.currentPath = "/";
+                updatePromptPath();
+                return;
+            }
+
+            if (arg === "..") {
+                if (gameState.currentPath !== "/") {
+                    const idx = gameState.currentPath.lastIndexOf("/");
+                    gameState.currentPath = idx === 0 ? "/" : gameState.currentPath.substring(0, idx);
+                }
+                updatePromptPath();
+                return;
+            }
+
+            let targetPath = gameState.currentPath === "/" ? `/${arg}` : `${gameState.currentPath}/${arg}`;
+            let allowed = false;
+
+            if (gameState.phase === 1) {
+                if (targetPath === "/von_neumann" || targetPath === "/harvard_arch") allowed = true;
+                if (gameState.currentPath === "/harvard_arch" && (arg === "ram_volatil" || arg === "rom_arranc" || arg === "memoria_cache")) allowed = true;
+            } else if (gameState.phase === 2) {
+                if (targetPath === "/recuperacio_sistema") allowed = true;
+            } else if (gameState.phase === 3) {
+                if (targetPath === "/servidor_web" || targetPath === "/encaminador_router" || targetPath === "/servidor_dns") allowed = true;
+                if (gameState.currentPath === "/servidor_dns" && arg === "logs_sistema") allowed = true;
+            } else if (gameState.phase === 4) {
+                if (targetPath === "/quarantena_firewall") allowed = true;
+            }
+
+            if (allowed) {
+                // Coll d'ampolla de Von Neumann
+                if (targetPath === "/von_neumann") {
+                    setGladosState('error');
+                    gameState.stats.phaseErrors[gameState.phase]++;
+                    printToTerminal("[COLL-D'AMPOLLA INICIAT]: L'Arquitectura de Von Neumann comparteix el mateix bus per a dades i programes.");
+                    printToTerminal("GLaDOS: Heu provocat un coll d'ampolla a la placa. Esperant 10 segons de rellotge analògic perquè es netegi el canal...", 'error');
+                    
+                    const input = document.getElementById("cli-input");
+                    input.disabled = true;
+                    setTimeout(() => {
+                        input.disabled = false;
+                        printToTerminal("Bus alliberat. Feu mitja volta cap a una arquitectura que separi memòries de dades.");
+                        focusCLI();
+                    }, 10000);
+                    return;
+                }
+
+                gameState.currentPath = targetPath;
+                updatePromptPath();
+            } else {
+                setGladosState('error');
+                gameState.stats.phaseErrors[gameState.phase]++;
+                printToTerminal(`bash: cd: ${arg}: No such file or directory.`, 'error');
+            }
+        }
+
+        function executeCat(arg) {
+            if (!arg) {
+                printToTerminal("Sintaxi: cat <nom_fitxer>");
+                return;
+            }
+
+            if (gameState.phase === 1) {
+                if (gameState.currentPath === "/harvard_arch/memoria_cache" && arg === "flag_hardware.txt") {
+                    setGladosState('success');
+                    const hexCode = (gameState.seed % 8999 + 1000).toString(16).toUpperCase();
+                    const flag = `FLAG{HARV_CACH_${hexCode}}`;
+                    printToTerminal(`
+[FITXER LLEGIT CORRECTAMENT - CÒDI DE SEGURETAT MAQUINARI]:
+
+${flag}
+`);
+                    triggerVictoryButton(flag);
+                } else if (gameState.currentPath === "/harvard_arch/ram_volatil" && arg === "buida.txt") {
+                    printToTerminal("GLaDOS: Viatge buit. Com que acabo de reiniciar el servidor, la RAM s'ha esborrat del tot per ser volàtil. Quina ineficiència.", 'error');
+                } else if (gameState.currentPath === "/harvard_arch/rom_arranc" && arg === "seguretat.bin") {
+                    printToTerminal("GLaDOS: Accés no autoritzat. Les instruccions de la ROM d'arrancada són d'estricte només lectura.", 'error');
+                } else {
+                    setGladosState('error');
+                    printToTerminal(`cat: ${arg}: Fitxer no trobat en aquesta unitat.`, 'error');
+                }
+            } else if (gameState.phase === 2) {
+                if (gameState.currentPath === "/recuperacio_sistema" && arg === "flag_software.txt" && gameState.unzipped) {
+                    setGladosState('success');
+                    const hexCode = (gameState.seed % 7999 + 2000).toString(16).toUpperCase();
+                    const flag = `FLAG{CLOUD_321_${hexCode}}`;
+                    printToTerminal(`
+[FITXER LLEGIT CORRECTAMENT - CÒDI DE SEGURETAT DE PROGRAMARI]:
+
+${flag}
+`);
+                    triggerVictoryButton(flag);
+                } else {
+                    setGladosState('error');
+                    printToTerminal(`cat: ${arg}: Error. L'arxiu és un binari tancat o s'ha d'extreure amb unzip de la capsa abans de ser obert.`, 'error');
+                }
+            } else if (gameState.phase === 3) {
+                if (gameState.currentPath === "/servidor_dns/logs_sistema" && arg === "atac_detectat.log") {
+                    setGladosState('success');
+                    const targetIp = `203.0.113.${gameState.varDnsIpSuffix}`;
+                    printToTerminal(`
+════════════════════════════════════════════════════════`);
+                    printToTerminal(`REGISTRE D'INCIDENT DE SEGURETAT: dns_escola_servidor.net`);
+                    printToTerminal(`TIPUS D'ATAC: Inundació de paquets ICMP (Ping Flood)`);
+                    printToTerminal(`ESTAT DE CIBERDEFENSA: Trànsit exfiltrat cap a l'exterior`);
+                    printToTerminal(`ORIGEN NUMÈRIC IDENTIFICAT: → IP: ${targetIp}`);
+                    printToTerminal(`════════════════════════════════════════════════════════
+`);
+                    printToTerminal("GLaDOS: Ara que teniu la IP, realitzeu el diagnostic numèric amb 'ping' per veure la latència.");
+                } else {
+                    setGladosState('error');
+                    printToTerminal(`cat: ${arg}: Fitxer de logs corruptes o buits.`, 'error');
+                }
+            } else {
+                setGladosState('error');
+                printToTerminal(`cat: ${arg}: Fitxer no trobat o accés no autoritzat pel administrador.`, 'error');
+            }
+        }
+
+        function executeUnzip(arg) {
+            if (gameState.phase !== 2) {
+                printToTerminal("unzip: Comanda no desbloquejada en aquesta cambra.", 'error');
+                return;
+            }
+
+            if (gameState.currentPath !== "/recuperacio_sistema" || (arg !== "solucions_examen_4ESO.zip" && arg !== "backup_local.zip" && arg !== "backup_servidor_cloud.zip")) {
+                printToTerminal("unzip: Fitxer no trobat o directori de recuperació buit.", 'error');
+                return;
+            }
+
+            // Trampa ètica d'avarícia
+            if (arg === "solucions_examen_4ESO.zip") {
+                setGladosState('error');
+                gameState.credits -= 20;
+                gameState.stats.phaseErrors[gameState.phase]++;
+                if (gameState.credits < 0) gameState.credits = 0;
+                updateStatsDisplay();
+
+                printToTerminal("[ALERTA ÈTICA]: S'ha registrat un accés inadequat a les dades d'exàmens del professorat de secundària.");
+                triggerTypewriter("Fascinant. Heu triat violar la privacitat del vostre docent a canvi de notes fàcils. He registrat l'incident sota l'etiqueta 'Humans sense moral'. Us he restat 20 XP i bloquejat el terminal per xafarders.", () => {
+                    triggerCooldown();
+                });
+                return;
+            }
+
+            // Còpia local inútil corrompuda
+            if (arg === "backup_local.zip") {
+                setGladosState('error');
+                gameState.stats.phaseErrors[gameState.phase]++;
+                printToTerminal("Descomprimint el fitxer backup_local.zip...");
+                printToTerminal("unzip: Error! Sector del disc local d'aula compromès i encriptat pel malware.", 'error');
+                printToTerminal("GLaDOS: Confiar exclusivament en un fitxer de còpia guardat dins de la mateixa terminal infectada? Quina manca de previsió elemental.", 'error');
+                return;
+            }
+
+            // Còpia remota segura (Clau interactiva de 3 dígits)
+            if (arg === "backup_servidor_cloud.zip") {
+                printToTerminal("Unzipping backup_servidor_cloud.zip...");
+                const pin = prompt("GLaDOS: Introduïu el codi de 3 xifres que defineix la regla d'or de les còpies de seguretat del vostre dossier:");
+                
+                if (pin === "321") {
+                    setGladosState('success');
+                    printToTerminal("  extracting: flag_software.txt  (OK)");
+                    gameState.unzipped = true;
+                    printToTerminal("Còpia de seguretat del núvol restaurada amb èxit. Feu 'ls' per veure la clau.");
+                } else {
+                    setGladosState('error');
+                    gameState.stats.phaseErrors[gameState.phase]++;
+                    printToTerminal("unzip: Codi d'encriptació de la clau errònia.", 'error');
+                    printToTerminal("GLaDOS: Contrasenya dolenta. Revisa els teus apunts: Còpies totals, dispositius físics i còpia externa... uneix els tres números.", 'error');
+                }
+            }
+        }
+
+        function executeNslookup(arg) {
+            if (gameState.phase !== 3) {
+                printToTerminal("nslookup: Comanda inactiva en aquest directori.", 'error');
+                return;
+            }
+
+            if (!arg) {
+                printToTerminal("Sintaxi: nslookup <nom_domini>");
+                return;
+            }
+
+            if (arg === "servidor_glados.com" || arg === "servidor_glados") {
+                setGladosState('success');
+                const targetIp = `203.0.113.${gameState.varDnsIpSuffix}`;
+                printToTerminal("Consultant el servidor de traducció de noms de xarxa DNS...");
+                printToTerminal(`Nom: ${arg}`);
+                printToTerminal(`Address: ${targetIp}`);
+                printToTerminal("
+[SISTEMA]: Nom resolt. El canal de logs del servidor DNS ha quedat obert.");
+            } else {
+                setGladosState('error');
+                printToTerminal("nslookup: host desconegut o no resolt pel servidor de l'institut.", 'error');
+            }
+        }
+
+        function executePing(arg) {
+            if (gameState.phase !== 3) {
+                printToTerminal("ping: comanda bloquejada.", 'error');
+                return;
+            }
+
+            const targetIp = `203.0.113.${gameState.varDnsIpSuffix}`;
+            if (arg !== targetIp) {
+                setGladosState('error');
+                gameState.stats.phaseErrors[gameState.phase]++;
+                if (arg === "servidor_glados.com") {
+                    printToTerminal("ping: host desconegut. Els encaminadors lògics de la Generalitat només entenen d'adreces numèriques de 4 bytes.", 'error');
+                } else {
+                    printToTerminal("ping: adreça IP incorrecte o no associada al servidor atacant.", 'error');
+                }
+                return;
+            }
+
+            // Execució amb èxit
+            setGladosState('success');
+            printToTerminal(`Enviant paquets ICMP cap a l'IP ${targetIp} de l'atacant amb 32 bytes de dades:`);
+            let count = 0;
+            const interval = setInterval(() => {
+                printToTerminal(`  Resposta de ${targetIp}: bytes=32 temps=${gameState.varLatencyTime}ms TTL=128`);
+                count++;
+                if (count >= 3) {
+                    clearInterval(interval);
+                    printToTerminal(`
+--- Estadístiques de connexió per a ${targetIp} ---`);
+                    printToTerminal(`  Paquets: enviats = 3, rebuts = 3, perduts = 0 (0% de pèrdua)`);
+                    printToTerminal(`  Latència total de la xarxa acumulada en els ${gameState.varLatencyHops} salts: ${gameState.varLatencyAns} ms`);
+                    
+                    const hexCode = (gameState.seed % 6999 + 3000).toString(16).toUpperCase();
+                    const flag = `FLAG{PING_DNS_${hexCode}}`;
+                    printToTerminal(`
+[SISTEMA]: Connexió mesurada correctament. Flag de xarxa obtinguda:
+
+${flag}
+`);
+                    triggerVictoryButton(flag);
+                }
+            }, 300);
+        }
+
+        function executeFile(arg) {
+            if (gameState.phase !== 4) {
+                printToTerminal("file: comanda inactiva en aquest canal.", 'error');
+                return;
+            }
+
+            if (gameState.currentPath !== "/quarantena_firewall" || (arg !== "actualitzacio_sistema.exe" && arg !== "joc_gratuït_MEGA_divertit.exe")) {
+                printToTerminal("file: Argument buit o binari executable no localitzat.", 'error');
+                return;
+            }
+
+            if (arg === "actualitzacio_sistema.exe") {
+                setGladosState('success');
+                printToTerminal("actualitzacio_sistema.exe: PE32 MS Windows executable (GUI) Intel 80386");
+                printToTerminal("  -> METADADES: SHA-256 Verified. Signat digitalment per Aperture Science (Vàlid).");
+            } else if (arg === "joc_gratuït_MEGA_divertit.exe") {
+                setGladosState('error');
+                printToTerminal("joc_gratuït_MEGA_divertit.exe: PE32 MS Windows executable (console) Intel 80386");
+                printToTerminal("  -> SIGNATURA DIGITAL: Cap certificat vàlid del Departament d'Educació.", 'error');
+                printToTerminal("  -> METADADES: Suspicious format detected (UPX compressed). Backdoor port active.", 'error');
+                printToTerminal("GLaDOS: Un joc d'escriptori executat sense cap signatura de seguretat? Que llestos. Heu col·locat vosaltres mateixos el paràsit al meu nucli.");
+            }
+        }
+
+        function executeRm(arg) {
+            if (gameState.phase !== 4) {
+                printToTerminal("rm: Operació de fitxers no autoritzada.", 'error');
+                return;
+            }
+
+            if (gameState.currentPath !== "/quarantena_firewall" || (arg !== "actualitzacio_sistema.exe" && arg !== "joc_gratuït_MEGA_divertit.exe")) {
+                printToTerminal("rm: Especifiqueu un fitxer executable actiu de la quarantena.", 'error');
+                return;
+            }
+
+            // Si esborren el fitxer legítim
+            if (arg === "actualitzacio_sistema.exe") {
+                setGladosState('error');
+                gameState.stats.phaseErrors[gameState.phase]++;
+                printToTerminal("[ERROR CRÍTIC]: S'ha eliminat el pegat de seguretat de la placa base!");
+                printToTerminal("GLaDOS: Heu eliminat l'únic programa que protegia el servidor de dades. El virus continua operant i forçant el Classroom. Reiniciant la cambra...", 'error');
+                
+                const input = document.getElementById("cli-input");
+                input.disabled = true;
+                setTimeout(() => {
+                    input.disabled = false;
+                    printToTerminal("Carpeta de quarantena restaurada. Intenteu-ho sense fer destrosses.");
+                    focusCLI();
+                }, 4000);
+                return;
+            }
+
+            // Esborrat del virus
+            if (arg === "joc_gratuït_MEGA_divertit.exe") {
+                setGladosState('success');
+                printToTerminal("rm: S'ha eliminat 'joc_gratuït_MEGA_divertit.exe' del servidor de dades.");
+                printToTerminal("[SISTEMA]: Amenaça eliminada de forma permanent. Comproveu si el canal té comunicacions residuals.");
+                gameState.deletedTrojan = true;
+            }
+        }
+
+        function executeNetstat() {
+            if (gameState.phase !== 4) {
+                printToTerminal("netstat: comanda inactiva en aquest directori.", 'error');
+                return;
+            }
+
+            printToTerminal("Llistat de comunicacions actives i rutes obertes d'Internet:
+");
+            printToTerminal("Proto  Adreça local          Adreça externa            Estat");
+            printToTerminal("TCP    192.168.1.15:443      192.168.1.99:53           ESTABLISHED  (DNS Server)");
+            
+            const targetIp = `203.0.113.${gameState.varDnsIpSuffix}`;
+            if (!gameState.deletedTrojan) {
+                printToTerminal(`TCP    192.168.1.15:1025     ${targetIp}:6666         ESTABLISHED  (Suspicious: BACKDOOR!)`, 'error');
+                printToTerminal("GLaDOS: El malware manté un dret d'espionatge obert amb el atacant en viu. Tallar-lo és la millor opció.");
+            } else {
+                printToTerminal(`TCP    192.168.1.15:1025     ${targetIp}:6666         TIME_WAIT    (Connection closing...)`);
+                printToTerminal("
+[SISTEMA]: No s'han detectat connexions sospitoses actives. El servidor està net.");
+                
+                const hexCode = (gameState.seed % 5999 + 4000).toString(16).toUpperCase();
+                const flag = `FLAG{NETSTAT_OUT_${hexCode}}`;
+                printToTerminal(`
+[SISTEMA]: Ciberdefensa aplicada correctament. Clau final detectada:
+
+${flag}
+`);
+                triggerVictoryButton(flag);
+            }
+        }
+
+        function executeLogout() {
+            if (gameState.phase !== 4 || !gameState.deletedTrojan) {
+                setGladosState('error');
+                gameState.stats.phaseErrors[gameState.phase]++;
+                printToTerminal("GLaDOS: Intentar tancar la connexió deixant la backdoor del darrere completament oberta al Classroom? Quina negligència de seguretat.", 'error');
+                return;
+            }
+
+            setGladosState('success');
+            printToTerminal("Tancant la sessió activa de l'equip de l'institut...");
+            printToTerminal("Higiene digital de comptes compartits validada de forma impecable.");
+            gameState.loggedOut = true;
+
+            setTimeout(() => {
+                triggerVictoryScreen();
+            }, 1000);
+        }
+
+        // 6. GESTIÓ DEL COOLDOWN ANTI-BRUTE-FORCE (OPCIÓ 4)
+        function triggerCooldown() {
+            setGladosState('error');
+            const overlay = document.getElementById("cooldown-screen");
+            const timerLabel = document.getElementById("lbl-cooldown-timer");
+            overlay.style.display = "flex";
+
+            let countdown = 30;
+            timerLabel.innerText = countdown;
+
+            document.getElementById("cli-input").disabled = true;
+
+            const interval = setInterval(() => {
+                countdown--;
+                timerLabel.innerText = countdown;
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    overlay.style.display = "none";
+                    gameState.failedAttempts = 0;
+                    setGladosState('idle');
+                    document.getElementById("cli-input").disabled = false;
+                    focusCLI();
+                }
+            }, 1000);
+        }
+
+        // 7. MECÀNICA DE CANVI DE ROLS FÍSICS AMB MODAL CSS (CD3)
+        function triggerVictoryButton(flagValue) {
+            const optsContainer = document.getElementById("interaction-options");
+            optsContainer.innerHTML = "";
+
+            const btn = document.createElement("a");
+            btn.className = "option-link";
+            btn.style.backgroundColor = "var(--accent-color)";
+            btn.style.color = "#000";
+            btn.innerText = `[ ENTREGAR CLAU DE SEGURETAT OBTINGUDA ]`;
+            btn.onclick = () => verifyFlag(flagValue);
+            optsContainer.appendChild(btn);
+        }
+
+        function verifyFlag(correctFlag) {
+            if (gameState.phase < 4) {
+                openRoleSwapModal();
+            } else {
+                if (gameState.loggedOut) {
+                    triggerVictoryScreen();
+                } else {
+                    printToTerminal("
+GLaDOS: Heu aconseguit la clau final. Però realment us aixequeu de la cadira de l'institut deixant la sessió completament oberta? Tancar el compte és elemental. Teclegeu 'logout'.", 'error');
+                }
+            }
+        }
+
+        function openRoleSwapModal() {
+            setGladosState('idle');
+            const screen = document.getElementById("lockout-screen");
+            const verifyInput = document.getElementById("lockout-verify-name");
+            verifyInput.value = "";
+
+            const nextPilot = gameState.currentPilot === gameState.userA ? gameState.userB : gameState.userA;
+            document.getElementById("lbl-lockout-desc").innerHTML = `
+                L'Alumne de secundària <strong>${gameState.currentPilot}</strong> ha completat la seva sessió com a Pilot actiu.<br><br>
+                El terminal d'experiments ha activat un tancament mecànic de seguretat.<br>
+                <strong>${nextPilot}</strong>, asseu-te al teclat físic i escriu el teu nom exactament per poder validar el canvi i activar la Fase ${gameState.phase + 1}.
+            `;
+
+            screen.style.display = "flex";
+            verifyInput.focus();
+        }
+
+        function verifyRoleSwap() {
+            const inputVal = document.getElementById("lockout-verify-name").value.trim().toLowerCase();
+            const nextPilot = gameState.currentPilot === gameState.userA ? gameState.userB : gameState.userA;
+            const nextCopilot = gameState.currentPilot === gameState.userA ? gameState.userA : gameState.userB;
+
+            if (inputVal === nextPilot.toLowerCase()) {
+                gameState.currentPilot = nextPilot;
+                gameState.currentCopilot = nextCopilot;
+
+                document.getElementById("lockout-screen").style.display = "none";
+                printToTerminal(`
+[SISTEMA]: Intercanvi físic de rols correcte. Sincronització del Classroom feta.`, 'system');
+                printToTerminal(`Nou Pilot del teclat: ${gameState.currentPilot}. Nou Copilot de dossier: ${gameState.currentCopilot}.`);
+
+                // Sincronitzar capçalera HUD
+                document.getElementById("lbl-pilot").innerText = gameState.currentPilot;
+                document.getElementById("lbl-copilot").innerText = gameState.currentCopilot;
+                
+                document.getElementById("interaction-options").innerHTML = "";
+                gameState.phase++;
+                initializePhase(gameState.phase);
+            } else {
+                alert(`Identificació incorrecta. L'alumne ${nextPilot} ha d'escriure el seu nom de registre per obrir el bloqueig.`);
+            }
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById("lbl-phase").innerText = gameState.phase;
+            document.getElementById("lbl-credits").innerText = gameState.credits;
+        }
+
+        // SOL·LICITUD DE PISTA DUA (COST: -10 XP DEL BEHAVIOR DE CLASSE)
+        function requestHint() {
+            if (gameState.credits < 10) {
+                alert("GLaDOS: No teniu prou crèdits de comportament de laboratori per comprar cap més pista.");
+                return;
+            }
+
+            gameState.credits -= 10;
+            gameState.stats.phaseHints[gameState.phase]++;
+            updateStatsDisplay();
+
+            let hint = "";
+            if (gameState.phase === 1) {
+                hint = "GLaDOS: Obriu els apunts de Maquinari. L'arquitectura que separa busos de dades i instruccions per guanyar velocitat és la de Harvard. Entreu-hi, llisteu-ne els fitxers i obriu la de la memòria cau ràpida propera a la CPU.";
+            } else if (gameState.phase === 2) {
+                hint = "GLaDOS: Aneu a la secció de Backups de la teoria. Quantes còpies de seguretat s'han de fer, en quants suports diferents i quantes còpies fora de l'entorn demana la regla bàsica de seguretat? Uniu els tres números d'aquesta regla d'or i introduïu-lo com a pin.";
+            } else if (gameState.phase === 3) {
+                hint = "GLaDOS: Busqueu a la secció d'Internet dels vostres papers. La comanda 'nslookup' permet consultar dominis textuals com 'servidor_glados.com' per rebre'n l'IP. Un cop la tingueu, mesureu el retard fent un ping cap a aquesta IP d'atacant.";
+            } else if (gameState.phase === 4) {
+                hint = "GLaDOS: Aneu a la teoria de Malware i Higiene Digital. Analitzeu primer l'amenaça de la quarantena amb l'ordre 'file' sobre el joc .exe, netegeu el troià infiltrat amb 'rm', obriu 'netstat' per comprovar xarxes i feu 'logout' preventiu.";
+            }
+
+            printToTerminal(`
+[P_P_P PISTA DUA SOL·LICITADA - COMPORTAMENT DE LABORATORI: -10 XP]:
+${hint}`);
+            setGladosState('talking');
+            setTimeout(() => setGladosState('idle'), 4000);
+        }
+
+        // 8. FINALITZACIÓ DE JOC I CÀLCUL DE NOTA COMPETENCIAL
+        function triggerVictoryScreen() {
+            clearInterval(gameState.timerInterval);
+
+            // Càlcul de nota ponderada de competències (Base 5, XP aporta, temps bonus)
+            let baseMark = 5.0;
+            let creditsBonus = (gameState.credits / 100) * 4.0; // fins a 4.0 punts de nota
+            let timeBonus = gameState.secondsElapsed < 900 ? 1.0 : (1200 - gameState.secondsElapsed) / 300; // fins a 1.0 si és < 15 minuts
+            if (timeBonus < 0) timeBonus = 0;
+
+            let finalMark = (baseMark + creditsBonus + timeBonus).toFixed(2);
+            if (finalMark > 10) finalMark = "10.00";
+
+            const min = String(Math.floor(gameState.secondsElapsed / 60)).padStart(2, '0');
+            const sec = String(gameState.secondsElapsed % 60).padStart(2, '0');
+
+            // CÀLCUL D'INTEGRITAT DE FITXER DE L'ENTREGA (SHA-256 HASH DINÀMIC ANTI-TRAMPES)
+            const rawHashInput = `${gameState.teamName}:${gameState.credits}:${gameState.secondsElapsed}:${finalMark}`;
+            let hash = 0;
+            for (let i = 0; i < rawHashInput.length; i++) {
+                hash = rawHashInput.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const securityHash = Math.abs(hash).toString(16).toUpperCase().padStart(8, '0');
+
+            const interfaceDiv = document.getElementById("main-interface");
+            interfaceDiv.innerHTML = `
+                <div class="victory-screen">
+                    <div class="victory-banner">CIBERDEFENSA COMPILADA AMB ÈXIT</div>
+                    <p style="color: #bbb; font-family: var(--terminal-font); font-size: 0.9rem; max-width: 600px; margin-bottom: 25px; line-height: 1.5;">
+                        GLaDOS: Experiment completat de manera acceptable per a humans de 4t d'ESO. Heu comès errors previsibles, heu hagut de recórrer a suborns de dades, però la backdoor ha estat tancada. Totes les vostres mètriques d'aula han estat exportades de manera asíncrona per millorar els meus algorismes competencials. Podeu marxar... abans que em cansi de la vostra limitada presència de carboni. Adéu, subjectes de proves.
+                    </p>
+                    
+                    <div class="victory-stats">
+                        <div class="stat-line"><span>Equip d'Informàtica:</span><span class="stat-val">${gameState.teamName}</span></div>
+                        <div class="stat-line"><span>Pilot de proves (Alumne A):</span><span class="stat-val">${gameState.userA}</span></div>
+                        <div class="stat-line"><span>Copilot de suport (Alumne B):</span><span class="stat-val">${gameState.userB}</span></div>
+                        <div class="stat-line"><span>Temps acumulat total:</span><span class="stat-val">${min}:${sec} segons</span></div>
+                        <div class="stat-line"><span>Crèdits finals obtinguts:</span><span class="stat-val">${gameState.credits} XP</span></div>
+                        <div class="stat-line" style="border-top: 1px dashed var(--text-color); margin-top: 15px; padding-top: 15px;">
+                            <span style="font-weight: bold; color: var(--text-color); font-size: 1.2rem;">NOTA COMPETENCIAL FINAL:</span>
+                            <span class="stat-val" style="color: var(--text-color); font-size: 1.4rem;">${finalMark} / 10</span>
+                        </div>
+                        <div class="stat-line" style="border: none; padding-top: 5px;">
+                            <span style="color: #555; font-size: 0.75rem;">Codi de seguretat de lliurament (Hash d'integritat):</span>
+                            <span style="color: #555; font-size: 0.75rem; font-family: monospace;">SEC256-${securityHash}</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <button class="send-data-btn" id="btn-send-sheets" onclick="sendDataToGoogleSheets('${finalMark}', '${securityHash}')">Registrar notes a la llista del Classroom</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 9. ENVIAMENT D'INFORMACIÓ AL GOOGLE APP SCRIPT (SHEETS)
+                function sendDataToGoogleSheets(mark, hash) {
+            const btn = document.getElementById("btn-send-sheets");
+            btn.disabled = true;
+            btn.innerText = "Sincronitzant amb el Sheets de Classroom...";
+
+            const payload = {
+                teamName: gameState.teamName,
+                userA: gameState.userA,
+                userB: gameState.userB,
+                secondsElapsed: gameState.secondsElapsed,
+                credits: gameState.credits,
+                finalMark: mark,
+                hash: hash,
+                // Mètriques detallades per fases
+                f1_time: gameState.stats.phaseTimes[1],
+                f1_err: gameState.stats.phaseErrors[1],
+                f1_hint: gameState.stats.phaseHints[1],
+                f2_time: gameState.stats.phaseTimes[2],
+                f2_err: gameState.stats.phaseErrors[2],
+                f2_hint: gameState.stats.phaseHints[2],
+                f3_time: gameState.stats.phaseTimes[3],
+                f3_err: gameState.stats.phaseErrors[3],
+                f3_hint: gameState.stats.phaseHints[3],
+                f4_time: gameState.stats.phaseTimes[4],
+                f4_err: gameState.stats.phaseErrors[4],
+                f4_hint: gameState.stats.phaseHints[4]
+            };
+
+            if (WEB_APP_URL && WEB_APP_URL.startsWith("http")) {
+                fetch(WEB_APP_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(() => {
+                    alert("S'ha desat la vostra nota correctament al Sheets de l'institut! Podeu tancar la pestanya.");
+                    btn.innerText = "DADES REGISTRADES AMB ÈXIT";
+                    btn.style.backgroundColor = "#222";
+                    btn.style.color = "#666";
+                })
+                .catch((err) => {
+                    alert("Error de xarxa en connectar amb el servidor de notes: " + err);
+                    btn.disabled = false;
+                    btn.innerText = "Tornar a provar el registre";
+                });
+            } else {
+                console.log("Payload enviat localment (offline mode):", payload);
+                setTimeout(() => {
+                    alert("S'ha simulat correctament el registre local (offline/Classroom no enllaçat).");
+                    btn.innerText = "DADES REGISTRADES (OFFLINE)";
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
